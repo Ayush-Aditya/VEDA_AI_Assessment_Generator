@@ -11,6 +11,9 @@ const bricolage = Bricolage_Grotesque({
 export const metadata: Metadata = {
   title: "VedaAI - AI Assessment Creator",
   description: "Create AI-powered question papers and assessments for your classroom",
+  icons: {
+    icon: "/icon.avif",
+  },
 };
 
 export default function RootLayout({
