@@ -1,7 +1,12 @@
 import axios from 'axios';
 import { ApiResponse, Assignment, AssignmentListItem, QuestionPaper } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+const RAW_API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL?.trim();
+const API_BASE_URL = RAW_API_BASE_URL
+  ? RAW_API_BASE_URL.replace(/\/$/, '')
+  : process.env.NODE_ENV === 'development'
+    ? 'http://localhost:5000'
+    : '';
 
 interface AssignmentsListData {
   assignments: AssignmentListItem[];
@@ -12,6 +17,10 @@ interface AssignmentData {
 }
 
 export async function fetchAssignments(): Promise<AssignmentListItem[]> {
+  if (!API_BASE_URL) {
+    throw new Error('Frontend is not configured with NEXT_PUBLIC_BACKEND_URL. Set it in Vercel and redeploy.');
+  }
+
   const response = await axios.get<ApiResponse<AssignmentsListData>>(`${API_BASE_URL}/api/assignments`);
 
   if (!response.data.success || !response.data.data?.assignments) {
@@ -25,6 +34,10 @@ export async function saveGeneratedAssignment(
   assignment: Assignment,
   questionPaper: QuestionPaper
 ): Promise<AssignmentListItem> {
+  if (!API_BASE_URL) {
+    throw new Error('Frontend is not configured with NEXT_PUBLIC_BACKEND_URL. Set it in Vercel and redeploy.');
+  }
+
   const response = await axios.post<ApiResponse<AssignmentData>>(`${API_BASE_URL}/api/assignments`, {
     assignment: {
       ...assignment,
@@ -41,6 +54,10 @@ export async function saveGeneratedAssignment(
 }
 
 export async function renameAssignmentById(id: string, title: string): Promise<AssignmentListItem> {
+  if (!API_BASE_URL) {
+    throw new Error('Frontend is not configured with NEXT_PUBLIC_BACKEND_URL. Set it in Vercel and redeploy.');
+  }
+
   const response = await axios.patch<ApiResponse<AssignmentData>>(`${API_BASE_URL}/api/assignments/${id}`, {
     title,
   });
@@ -53,6 +70,10 @@ export async function renameAssignmentById(id: string, title: string): Promise<A
 }
 
 export async function deleteAssignmentById(id: string): Promise<void> {
+  if (!API_BASE_URL) {
+    throw new Error('Frontend is not configured with NEXT_PUBLIC_BACKEND_URL. Set it in Vercel and redeploy.');
+  }
+
   const response = await axios.delete<ApiResponse>(`${API_BASE_URL}/api/assignments/${id}`);
   if (!response.data.success) {
     throw new Error(response.data.error || 'Failed to delete assignment');
