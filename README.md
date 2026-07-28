@@ -16,9 +16,13 @@ VedaAI is a full-stack assessment workflow platform designed for fast authoring 
 
 ## Product Preview
 
-![VedaAI brand mark](frontend/public/veda%20logo.avif)
+![VedaAI assignment creation screen](content/Screenshot%202026-07-28%20203552.png)
 
-![Question generation preview](frontend/public/generate.jpg)
+![VedaAI question generation screen](content/Screenshot%202026-07-28%20203613.png)
+
+## Architecture Diagram
+
+![VedaAI architecture diagram](content/Archi%20Veda.png)
 
 ## Key Capabilities
 
