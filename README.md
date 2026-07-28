@@ -1,79 +1,106 @@
-# VedaAI
+# VedaAI – AI Assessment Generation Platform
 
-AI-powered assessment generation platform for teachers.
+VedaAI is an AI assessment generation platform that helps educators configure exam patterns, generate question papers, review content, and export PDF-ready assessments.
 
-VedaAI lets educators configure an exam pattern, generate questions with Gemini, review/edit the paper, and export a polished question paper.
+**Tech Stack:** Next.js, Express.js, TypeScript, MongoDB, Redis, BullMQ, WebSockets, Gemini API
 
-## Highlights
+## Overview
 
-- Full-stack TypeScript monorepo (Next.js + Express)
-- Assignment CRUD with MongoDB persistence
-- Synchronous and asynchronous question generation endpoints
-- Redis + BullMQ queue pipeline for long-running generation
-- WebSocket job status updates
-- PDF-ready question paper preview/download flow
+VedaAI is a full-stack assessment workflow platform designed for fast authoring and reliable generation. It combines a modern Next.js frontend with an Express + TypeScript backend, persistent assignment storage, asynchronous question generation, and real-time progress updates for long-running AI jobs.
+
+## Resume-Ready Highlights
+
+- Architected a full-stack assessment generation platform enabling educators to configure exam patterns, generate AI-powered question papers, review content, and export PDF-ready assessments using Next.js, Express.js, and MongoDB.
+- Designed an asynchronous question-generation pipeline using Redis and BullMQ, offloading long-running LLM requests to background workers with retry support and improved system responsiveness.
+- Implemented real-time job progress tracking using WebSockets, RESTful CRUD APIs for assignment management, and a modular backend architecture supporting scalable deployment through service separation and extensible AI provider integration.
+
+## Product Preview
+
+![VedaAI brand mark](frontend/public/veda%20logo.avif)
+
+![Question generation preview](frontend/public/generate.jpg)
+
+## Key Capabilities
+
+- Assignment creation and persistence with MongoDB
+- Configurable question generation by subject, class, marks, difficulty, and format
+- Synchronous and asynchronous generation flows for different workload sizes
+- Redis-backed BullMQ queue for background processing and retries
+- WebSocket-powered progress updates for active jobs
+- Question paper preview and PDF export workflow
+- Context-aware prompt building for more relevant AI output
 
 ## Architecture
 
+```mermaid
+flowchart LR
+  A[Educator] --> B[Next.js Frontend]
+  B --> C[Express API]
+  C --> D[(MongoDB)]
+  C --> E[(Redis)]
+  E --> F[BullMQ Worker]
+  F --> G[Gemini API]
+  F --> H[WebSocket Updates]
+  H --> B
+  C --> I[PDF Preview / Export]
+```
+
+The platform is intentionally split so short jobs can return quickly through the API, while heavier generation requests move to the queue and report status back to the UI in real time.
+
+## Tech Stack
+
 ### Frontend
 
-- Next.js 16 (App Router), React 19, Tailwind CSS
-- Zustand for assignment and UI state
-- Axios-based API clients
+- Next.js 16 App Router
+- React 19
+- Tailwind CSS
+- Zustand for state management
+- Axios for API calls
+- Framer Motion for UI motion
+- better-react-mathjax for mathematical content rendering
 
 ### Backend
 
-- Express 5 + TypeScript
-- MongoDB (Mongoose) for saved assignments
-- Redis for job state and queue backend
-- BullMQ worker for async generation jobs
-- WebSocket broadcast channel for realtime job updates
+- Express 5 with TypeScript
+- MongoDB with Mongoose
+- Redis for job state and queue support
+- BullMQ for background workers and retries
+- WebSockets for progress streaming
+- Gemini API integration for question generation
 
-### AI Layer
-
-- Gemini API integration (model configurable via env)
-- Prompt builder composes assignment settings + optional context
-- JSON-only response strategy for stable parsing
-
-## Why This Architecture
-
-- Fast UX: sync endpoint gives quick results for small workloads.
-- Scalable UX: async endpoint prevents UI timeout for larger jobs.
-- Reliability: queue retries and cached job states improve resilience.
-- Extensibility: provider/model can be swapped from environment config.
-- Deployment-friendly: frontend/backend can be deployed independently.
-
-## Folder Structure
+## Repository Structure
 
 ```text
 vedaAI/
-   backend/
-      src/
-         config/
-         infra/
-         jobs/
-         services/
-         websocket/
-         server.ts
-   frontend/
-      app/
-      components/
-      lib/
-      src/store/
-      public/
+├── backend/
+│   └── src/
+│       ├── config/
+│       ├── infra/
+│       ├── jobs/
+│       ├── services/
+│       ├── types/
+│       ├── websocket/
+│       └── server.ts
+├── frontend/
+│   ├── app/
+│   ├── components/
+│   ├── lib/
+│   ├── public/
+│   └── src/
+└── README.md
 ```
 
 ## Local Setup
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 18 or newer
 - npm
-- MongoDB URI (Atlas or local)
-- Redis URL (local or managed)
+- MongoDB connection string
+- Redis connection string
 - Gemini API key
 
-### 1) Install dependencies
+### Install Dependencies
 
 ```bash
 cd backend
@@ -83,16 +110,9 @@ cd ../frontend
 npm install
 ```
 
-### 2) Configure backend environment
+### Configure Environment
 
-Copy and edit backend environment file:
-
-```bash
-cd backend
-copy .env.example .env
-```
-
-Required fields in backend/.env:
+Create a backend `.env` file with the following values:
 
 ```env
 PORT=5000
@@ -108,151 +128,57 @@ GEMINI_API_KEY=your_gemini_api_key
 GEMINI_MODEL=gemini-2.0-flash
 ```
 
-### 3) Start backend
+### Run the Backend
 
 ```bash
 cd backend
 npm run dev
 ```
 
-Backend URL: http://localhost:5000
+Backend URL: `http://localhost:5000`
 
-### 4) Start frontend
+### Run the Frontend
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-Frontend URL: http://localhost:3000
+Frontend URL: `http://localhost:3000`
 
-## Test With Your Own API
-
-After setting GEMINI_API_KEY and starting both services:
-
-1. Open the assignment page.
-2. Fill assignment details and question configuration.
-3. Generate questions using sync or async flow.
-4. Save and verify assignment appears in list.
-5. Download question paper PDF.
-
-Quick backend health check:
-
-```bash
-curl http://localhost:5000/health
-```
-
-## API Surface
+## Core API Surface
 
 ### Assignments
 
-- GET /api/assignments
-- POST /api/assignments
-- PATCH /api/assignments/:id
-- DELETE /api/assignments/:id
+- `GET /api/assignments`
+- `POST /api/assignments`
+- `PATCH /api/assignments/:id`
+- `DELETE /api/assignments/:id`
 
 ### Question Generation
 
-- POST /api/questions/generate
-- POST /api/questions/generate-async
-- GET /api/questions/jobs/:jobId
+- `POST /api/questions/generate`
+- `POST /api/questions/generate-async`
+- `GET /api/questions/jobs/:jobId`
 
 ### Realtime
 
-- WebSocket endpoint: /ws
+- WebSocket endpoint: `/ws`
 
 ## Deployment Notes
 
-- Set ALLOW_START_WITHOUT_DB=false in production.
-- Use managed MongoDB and Redis with stable network egress.
-- Keep REDIS eviction policy as noeviction for BullMQ reliability.
-- Configure CORS_ORIGIN to deployed frontend URL.
+- Use managed MongoDB and Redis in production.
+- Keep `ALLOW_START_WITHOUT_DB=false` for production reliability.
+- Configure `CORS_ORIGIN` to match the deployed frontend URL.
+- Keep Redis eviction policy compatible with BullMQ reliability expectations.
+
+## Why This Project Stands Out
+
+- It solves a real workflow problem for educators instead of acting as a demo.
+- It separates fast and slow paths so the UI stays responsive under load.
+- It combines persistence, background processing, and live updates in one cohesive system.
+- It is structured for incremental feature growth, including new AI providers and richer assessment formats.
 
 ## License
 
 Private project for assessment workflow implementation.
-  difficultyLevel: "easy" | "medium" | "hard" | "mixed";
-  dueDate: string;
-  questionConfigs: QuestionConfig[];
-  fileUpload?: File;
-  context?: string; // Curriculum content
-  customPrompt?: string; // User instructions
-  additionalInstructions: string;
-}
-```
-
-### Generated Question
-```typescript
-interface GeneratedQuestion {
-  id: string;
-  text: string;
-  type: QuestionType;
-  difficulty: "easy" | "medium" | "hard";
-  marks: number;
-  section: string;
-  options?: string[]; // for MCQ
-  correctAnswer?: string;
-  explanation?: string;
-}
-```
-
-## Rate Limiting Strategy
-
-For free tier LLM APIs:
-1. **Caching** - Redis stores generated questions
-2. **Batch Processing** - Process all configurations in one API call
-3. **Job Queue** - BullMQ with exponential backoff
-4. **Database Deduplication** - Reuse similar papers
-5. **Progressive Generation** - Generate one section at a time
-
-## Testing Checklist
-
-- [ ] Create assignment form validation
-- [ ] Question configuration UI
-- [ ] File upload working
-- [ ] Zustand state updates properly
-- [ ] Question paper preview displays correctly
-- [ ] Mobile responsiveness tested
-- [ ] PDF generation working
-
-## Deployment Considerations
-
-### Frontend
-- Deploy to Vercel, Netlify, or similar
-- Environment variables for API URL
-
-### Backend
-- Deploy to Railway, Render, Heroku, or self-hosted
-- Ensure MongoDB & Redis accessible
-- Set environment variables securely
-
-## Future Enhancements
-
-1. **Advanced PDF Export**
-   - Install `html2pdf.js` or `jsPDF`
-   - Better LaTeX rendering
-
-2. **Answer Sheet Generation**
-   - Auto-generate answer key
-   - MCQ answer bubbles
-
-3. **Question Bank**
-   - Save reusable questions
-   - Category-based filtering
-
-4. **Collaboration Features**
-   - Share assignments with colleagues
-   - Comments & annotations
-
-5. **Analytics**
-   - Track student performance
-   - Question difficulty analysis
-
-## Support
-
-For issues or questions about the implementation, refer to the Figma design:
-[VedaAI Design File](https://www.figma.com/design/nB2HMm1BhTpmHcHrmEslGB/VedaAI---Hiring-Assignment)
-
----
-
-**Happy Teaching! 🎓**
